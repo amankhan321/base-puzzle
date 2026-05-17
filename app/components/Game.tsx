@@ -296,6 +296,20 @@ export default function Game() {
     return () => { window.removeEventListener('touchstart', ts); window.removeEventListener('touchend', te) }
   }, [moveLeft, moveRight, moveDown, rotatePiece, hardDrop])
 
+  useEffect(() => {
+  const init = async () => {
+    try {
+      await sdk.actions.ready()
+    } catch (e) {
+      console.error('Farcaster ready error:', e)
+    }
+
+    setIsReady(true)
+  }
+
+  init()
+}, [])
+
   const resetGame = () => {
     bag = []; const b = createBoard(), c = randomPiece(), n = randomPiece()
     boardRef.current = b; currentRef.current = c; nextRef.current = n
@@ -318,6 +332,7 @@ const handleConnect = async () => {
     console.error('Connect error:', e)
   }
 }
+
 
   const saveScore = () => { if (!isConnected) { handleConnect(); return }; if (!scoreRef.current) return; setSaveMsg('Sending...'); writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'saveScore', args: [BigInt(scoreRef.current), BigInt(totalLinesRef.current), BigInt(levelRef.current)] }) }
 
