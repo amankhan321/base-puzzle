@@ -185,15 +185,17 @@ export default function Game() {
 
 useEffect(() => {
     if (connectors.length === 0) return
-    const fcConnector = connectors.find(c => c.id === 'farcasterMiniApp')
-    const cbConnector = connectors.find(c => c.id === 'coinbaseWalletSDK')
-    const urlParams = new URLSearchParams(window.location.search)
-    const isAppContext = urlParams.get('app') === '1'
-    if (isAppContext && cbConnector) {
-      connect({ connector: cbConnector })
-    } else if (fcConnector) {
-      connect({ connector: fcConnector })
-    }
+    setTimeout(() => {
+      const fcConnector = connectors.find(c => c.id === 'farcasterMiniApp')
+      const cbConnector = connectors.find(c => c.id === 'coinbaseWalletSDK')
+      const urlParams = new URLSearchParams(window.location.search)
+      const isAppContext = urlParams.get('app') === '1'
+      if (isAppContext && cbConnector) {
+        connect({ connector: cbConnector })
+      } else if (fcConnector) {
+        connect({ connector: fcConnector })
+      }
+    }, 500)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectors])
   useEffect(() => { if (txSuccess) setSaveMsg('✅ Score saved on Base!') }, [txSuccess])
