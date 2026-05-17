@@ -319,17 +319,6 @@ const handleConnect = async () => {
   }
 }
 
-useEffect(() => {
-  if (!connectors.length) return
-
-  const reconnect = async () => {
-    try {
-      await connect({ connector: connectors[0] })
-    } catch {}
-  }
-
-  reconnect()
-}, [connectors])
   const saveScore = () => { if (!isConnected) { handleConnect(); return }; if (!scoreRef.current) return; setSaveMsg('Sending...'); writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'saveScore', args: [BigInt(scoreRef.current), BigInt(totalLinesRef.current), BigInt(levelRef.current)] }) }
 
   const renderBoard = () => {
