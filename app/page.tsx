@@ -30,8 +30,7 @@ export default function Home() {
         'https://go.cb-w.com/dapp?cb_url=https%3A%2F%2Fbase-puzzle.vercel.app%3Fapp%3D1'
       setTimeout(() => setEnv('mobile'), 2500)
     } else {
-      window.location.href =
-        'https://farcaster.xyz/miniapps/base-puzzle'
+     window.location.href = 'https://warpcast.com/~/mini-apps/launch?domain=base-puzzle-one.vercel.app'
     }
   }, [])
 

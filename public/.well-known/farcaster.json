@@ -1,0 +1,17 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "Base Puzzle",
+    "iconUrl": "https://base-puzzle-one.vercel.app/icon.png",
+    "homeUrl": "https://base-puzzle-one.vercel.app",
+    "imageUrl": "https://base-puzzle-one.vercel.app/og-image.png",
+    "splashImageUrl": "https://base-puzzle-one.vercel.app/splash.png",
+    "splashBackgroundColor": "#060818",
+    "webhookUrl": ""
+  }
+}
