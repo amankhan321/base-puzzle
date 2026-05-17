@@ -183,12 +183,6 @@ export default function Game() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-useEffect(() => {
-    if (!isReady) return
-    const fc = connectors.find(c => c.id === 'farcasterMiniApp')
-    if (fc) connect({ connector: fc })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReady])
 
   useEffect(() => {
     if (connectors.length === 0) return
