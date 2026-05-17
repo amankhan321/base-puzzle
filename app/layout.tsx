@@ -13,14 +13,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="fc:miniapp" content={JSON.stringify({
           version: '1',
-          imageUrl: 'https://base-puzzle.vercel.app/og-image.png',
+          imageUrl: 'https://base-puzzle-one.vercel.app/og-image.png',
           button: {
             title: 'Play Base Puzzle',
             action: {
               type: 'launch_miniapp',
               name: 'Base Puzzle',
-              url: 'https://base-puzzle.vercel.app',
-              splashImageUrl: 'https://base-puzzle.vercel.app/splash.png',
+              url: 'https://base-puzzle-one.vercel.app',
+              splashImageUrl: 'https://base-puzzle-one.vercel.app/splash.png',
               splashBackgroundColor: '#111827',
             },
           },
