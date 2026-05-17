@@ -27,7 +27,7 @@ export default function Home() {
       setEnv('farcaster')
     } else if (isMobile) {
       window.location.href =
-        'https://go.cb-w.com/dapp?cb_url=https%3A%2F%2Fbase-puzzle.vercel.app%3Fapp%3D1'
+        'https://go.cb-w.com/dapp?cb_url=https%3A%2F%2Fbase-puzzle-one.vercel.app%3Fapp%3D1'
       setTimeout(() => setEnv('mobile'), 2500)
     } else {
      window.location.href = 'https://warpcast.com/~/mini-apps/launch?domain=base-puzzle-one.vercel.app'
@@ -108,7 +108,7 @@ export default function Home() {
         🔵 Open in Base App
       </a>
       <a
-        href="https://warpcast.com/~/mini-apps/launch?domain=base-puzzle.vercel.app"
+        href="https://warpcast.com/~/mini-apps/launch?domain=base-puzzle-one.vercel.app"
         style={{
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.1)',
