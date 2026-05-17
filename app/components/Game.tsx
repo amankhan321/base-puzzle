@@ -299,7 +299,16 @@ useEffect(() => {
     setMissions([{ id: 1, text: 'Clear 5 lines', target: 5, current: 0, done: false }, { id: 2, text: 'Reach Lvl 3', target: 3, current: 1, done: false }, { id: 3, text: 'Score 1000', target: 1000, current: 0, done: false }])
   }
 
-  const handleConnect = () => { const fc = connectors.find(c => c.id === 'farcasterMiniApp'), cb = connectors.find(c => c.id === 'coinbaseWalletSDK'); connect({ connector: fc || cb || connectors[0] }) }
+  const handleConnect = async () => {
+    try {
+      const fc = connectors.find(c => c.id === 'farcasterMiniApp')
+      const cb = connectors.find(c => c.id === 'coinbaseWalletSDK')
+      const connector = fc || cb || connectors[0]
+      if (connector) await connect({ connector })
+    } catch (e) {
+      console.error('Connect error:', e)
+    }
+  }
   const saveScore = () => { if (!isConnected) { handleConnect(); return }; if (!scoreRef.current) return; setSaveMsg('Sending...'); writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'saveScore', args: [BigInt(scoreRef.current), BigInt(totalLinesRef.current), BigInt(levelRef.current)] }) }
 
   const renderBoard = () => {
