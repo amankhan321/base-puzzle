@@ -181,7 +181,14 @@ export default function Game() {
     const s = localStorage.getItem('basepuzzle_best')
     if (s) setBestScore(parseInt(s))
     const fcConnector = connectors.find(c => c.id === 'farcasterMiniApp')
-    if (fcConnector) connect({ connector: fcConnector })
+    const cbConnector = connectors.find(c => c.id === 'coinbaseWalletSDK')
+    const urlParams = new URLSearchParams(window.location.search)
+    const isAppContext = urlParams.get('app') === '1'
+    if (isAppContext && cbConnector) {
+      connect({ connector: cbConnector })
+    } else if (fcConnector) {
+      connect({ connector: fcConnector })
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => { if (txSuccess) setSaveMsg('✅ Score saved on Base!') }, [txSuccess])
