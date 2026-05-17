@@ -175,7 +175,15 @@ export default function Game() {
   const { writeContract, data: txHash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
-  useEffect(() => { sdk.actions.ready(); setIsReady(true); const s = localStorage.getItem('basepuzzle_best'); if (s) setBestScore(parseInt(s)) }, [])
+  useEffect(() => {
+    sdk.actions.ready()
+    setIsReady(true)
+    const s = localStorage.getItem('basepuzzle_best')
+    if (s) setBestScore(parseInt(s))
+    const fcConnector = connectors.find(c => c.id === 'farcasterMiniApp')
+    if (fcConnector) connect({ connector: fcConnector })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   useEffect(() => { if (txSuccess) setSaveMsg('✅ Score saved on Base!') }, [txSuccess])
 
   const spawnNext = useCallback(() => {
