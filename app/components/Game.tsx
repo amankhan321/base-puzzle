@@ -8,7 +8,7 @@ const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${st
 const CONTRACT_ABI = [{ name: 'saveScore', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: '_score', type: 'uint256' }, { name: '_lines', type: 'uint256' }, { name: '_level', type: 'uint256' }], outputs: [] }] as const
 
 const COLS = 10
-const ROWS = 20
+const ROWS = 18
 
 const PIECES = [
   { shape: [[1,1,1,1]], color: '#22d3ee' },
