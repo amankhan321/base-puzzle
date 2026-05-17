@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAccount, useConnect, useDisconnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import sdk from '@farcaster/miniapp-sdk'
 
-const CONTRACT_ADDRESS = '0x9C5fc82C59944f1184fF399d816a3423b6bC2724' as `0x${string}`
+const CONTRACT_ADDRESS = '0x2b481A0B3DF460fae80777424BB1a0b95Af6a0ec' as `0x${string}`
 const CONTRACT_ABI = [{ name: 'saveScore', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: '_score', type: 'uint256' }, { name: '_lines', type: 'uint256' }, { name: '_level', type: 'uint256' }], outputs: [] }] as const
 
 const COLS = 10
