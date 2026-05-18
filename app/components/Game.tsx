@@ -178,7 +178,11 @@ export default function Game() {
   const { isLoading: isConfirming, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
   useEffect(() => {
-    sdk.actions.ready()
+    try {
+      sdk.actions.ready()
+    } catch (e) {
+      console.log('SDK ready error:', e)
+    }
     setIsReady(true)
     const s = localStorage.getItem('basepuzzle_best')
     if (s) setBestScore(parseInt(s))
