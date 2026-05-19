@@ -1,5 +1,3 @@
-
-
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -81,64 +79,23 @@ function getGhostY(board: Board, piece: Piece): number {
   return y
 }
 
-// Gem cell renderer
 function GemCell({ color, isGhost }: { color: string | null, isGhost: boolean }) {
   if (!color || isGhost) {
-    return (
-      <div style={{
-        aspectRatio: '1',
-        background: isGhost ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
-        borderRadius: 3,
-        border: isGhost ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.04)',
-      }} />
-    )
+    return <div style={{ aspectRatio: '1', background: isGhost ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)', borderRadius: 3, border: isGhost ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.04)' }} />
   }
-
-  // Parse hex to get darker shade for border
-  const r = parseInt(color.slice(1,3), 16)
-  const g = parseInt(color.slice(3,5), 16)
-  const b = parseInt(color.slice(5,7), 16)
+  const r = parseInt(color.slice(1,3), 16), g = parseInt(color.slice(3,5), 16), b = parseInt(color.slice(5,7), 16)
   const dark = `rgba(${Math.floor(r*0.3)},${Math.floor(g*0.3)},${Math.floor(b*0.3)},1)`
   const light = `rgba(${Math.min(255,r+80)},${Math.min(255,g+80)},${Math.min(255,b+80)},1)`
   const mid = `rgba(${r},${g},${b},0.9)`
-
   return (
-    <div style={{
-      aspectRatio: '1',
-      borderRadius: 3,
-      background: `radial-gradient(circle at 35% 35%, ${light} 0%, ${mid} 45%, ${dark} 100%)`,
-      border: `1px solid rgba(212,175,55,0.7)`,
-      boxShadow: `0 0 6px ${color}90, inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -1px 1px rgba(0,0,0,0.4)`,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* shine dot */}
-      <div style={{
-        position: 'absolute',
-        top: '15%',
-        left: '18%',
-        width: '22%',
-        height: '22%',
-        borderRadius: '50%',
-        background: 'rgba(255,255,255,0.7)',
-        filter: 'blur(1px)',
-      }} />
-      {/* second shine */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        left: '10%',
-        width: '40%',
-        height: '40%',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
-      }} />
+    <div style={{ aspectRatio: '1', borderRadius: 3, background: `radial-gradient(circle at 35% 35%, ${light} 0%, ${mid} 45%, ${dark} 100%)`, border: `1px solid rgba(212,175,55,0.7)`, boxShadow: `0 0 6px ${color}90, inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -1px 1px rgba(0,0,0,0.4)`, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '15%', left: '18%', width: '22%', height: '22%', borderRadius: '50%', background: 'rgba(255,255,255,0.7)', filter: 'blur(1px)' }} />
+      <div style={{ position: 'absolute', top: '10%', left: '10%', width: '40%', height: '40%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)' }} />
     </div>
   )
 }
 
 export default function Game() {
-  const [isReady, setIsReady] = useState(false)
   const [board, setBoard] = useState<Board>(createBoard())
   const [current, setCurrent] = useState<Piece>(randomPiece)
   const [next, setNext] = useState<Piece>(randomPiece)
@@ -177,34 +134,22 @@ export default function Game() {
   const { writeContract, data: txHash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
+  // Single init effect - call ready immediately then connect
   useEffect(() => {
-    try {
-      sdk.actions.ready()
-    } catch (e) {
-      console.log('SDK ready error:', e)
+    const init = async () => {
+      try { await sdk.actions.ready() } catch (e) { console.log('sdk ready:', e) }
+      const s = localStorage.getItem('basepuzzle_best')
+      if (s) setBestScore(parseInt(s))
+      // Auto connect farcaster wallet
+      setTimeout(() => {
+        const fc = connectors.find(c => c.id === 'farcasterMiniApp')
+        if (fc) connect({ connector: fc })
+      }, 300)
     }
-    setIsReady(true)
-    const s = localStorage.getItem('basepuzzle_best')
-    if (s) setBestScore(parseInt(s))
+    init()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-
-  useEffect(() => {
-    if (connectors.length === 0) return
-    setTimeout(() => {
-      const fcConnector = connectors.find(c => c.id === 'farcasterMiniApp')
-      const cbConnector = connectors.find(c => c.id === 'coinbaseWalletSDK')
-      const urlParams = new URLSearchParams(window.location.search)
-      const isAppContext = urlParams.get('app') === '1'
-      if (isAppContext && cbConnector) {
-        connect({ connector: cbConnector })
-      } else if (fcConnector) {
-        connect({ connector: fcConnector })
-      }
-    }, 500)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectors])
   useEffect(() => { if (txSuccess) setSaveMsg('✅ Score saved on Base!') }, [txSuccess])
 
   const spawnNext = useCallback(() => {
@@ -238,7 +183,6 @@ export default function Game() {
   }, [spawnNext])
 
   useEffect(() => {
-    if (!isReady) return
     const tick = () => {
       if (gameOverRef.current || pausedRef.current) return
       const p = currentRef.current, b = boardRef.current
@@ -247,24 +191,21 @@ export default function Game() {
     }
     const id = setInterval(tick, Math.max(80, 600 - (levelRef.current - 1) * 50))
     return () => clearInterval(id)
-  }, [isReady, lockAndClear, level])
+  }, [lockAndClear, level])
 
   const moveLeft = useCallback(() => { if (gameOverRef.current || pausedRef.current) return; const p = currentRef.current; if (isValid(boardRef.current, p, -1, 0)) { const m = { ...p, x: p.x - 1 }; currentRef.current = m; setCurrent(m) } }, [])
   const moveRight = useCallback(() => { if (gameOverRef.current || pausedRef.current) return; const p = currentRef.current; if (isValid(boardRef.current, p, 1, 0)) { const m = { ...p, x: p.x + 1 }; currentRef.current = m; setCurrent(m) } }, [])
   const moveDown = useCallback(() => { if (gameOverRef.current || pausedRef.current) return; const p = currentRef.current, b = boardRef.current; if (isValid(b, p, 0, 1)) { const m = { ...p, y: p.y + 1 }; currentRef.current = m; setCurrent(m) } else lockAndClear(b, p) }, [lockAndClear])
-
   const rotatePiece = useCallback(() => {
     if (gameOverRef.current || pausedRef.current) return
     const p = currentRef.current, b = boardRef.current, rot = rotate(p.shape)
     for (const dx of [0, 1, -1, 2, -2]) { if (isValid(b, p, dx, 0, rot)) { const m = { ...p, shape: rot, x: p.x + dx }; currentRef.current = m; setCurrent(m); return } }
   }, [])
-
   const hardDrop = useCallback(() => {
     if (gameOverRef.current || pausedRef.current) return
     const p = currentRef.current, b = boardRef.current, gy = getGhostY(b, p)
     const d = { ...p, y: gy }; currentRef.current = d; setCurrent(d); lockAndClear(b, d)
   }, [lockAndClear])
-
   const holdPiece = useCallback(() => {
     if (!canHold || gameOverRef.current || pausedRef.current) return
     const p = currentRef.current
@@ -300,20 +241,6 @@ export default function Game() {
     return () => { window.removeEventListener('touchstart', ts); window.removeEventListener('touchend', te) }
   }, [moveLeft, moveRight, moveDown, rotatePiece, hardDrop])
 
-  useEffect(() => {
-  const init = async () => {
-    try {
-      await sdk.actions.ready()
-    } catch (e) {
-      console.error('Farcaster ready error:', e)
-    }
-
-    setIsReady(true)
-  }
-
-  init()
-}, [])
-
   const resetGame = () => {
     bag = []; const b = createBoard(), c = randomPiece(), n = randomPiece()
     boardRef.current = b; currentRef.current = c; nextRef.current = n
@@ -322,23 +249,20 @@ export default function Game() {
     setMissions([{ id: 1, text: 'Clear 5 lines', target: 5, current: 0, done: false }, { id: 2, text: 'Reach Lvl 3', target: 3, current: 1, done: false }, { id: 3, text: 'Score 1000', target: 1000, current: 0, done: false }])
   }
 
-const handleConnect = async () => {
-  try {
-    const connector = connectors[0]
-
-    if (!connector) {
-      console.error('No connector')
-      return
-    }
-
-    await connect({ connector })
-  } catch (e) {
-    console.error('Connect error:', e)
+  const handleConnect = async () => {
+    try {
+      const fc = connectors.find(c => c.id === 'farcasterMiniApp')
+      const connector = fc || connectors[0]
+      if (connector) await connect({ connector })
+    } catch (e) { console.error('Connect error:', e) }
   }
-}
 
-
-  const saveScore = () => { if (!isConnected) { handleConnect(); return }; if (!scoreRef.current) return; setSaveMsg('Sending...'); writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'saveScore', args: [BigInt(scoreRef.current), BigInt(totalLinesRef.current), BigInt(levelRef.current)] }) }
+  const saveScore = () => {
+    if (!isConnected) { handleConnect(); return }
+    if (!scoreRef.current) return
+    setSaveMsg('Sending...')
+    writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'saveScore', args: [BigInt(scoreRef.current), BigInt(totalLinesRef.current), BigInt(levelRef.current)] })
+  }
 
   const renderBoard = () => {
     const d = board.map(row => [...row]), gy = getGhostY(board, current)
@@ -375,21 +299,16 @@ const handleConnect = async () => {
     )
   }
 
-  if (!isReady) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#030712' }}><div style={{ color: '#fff', fontSize: 16 }}>Loading...</div></div>
-
   const T = THEMES[Math.min(Math.floor((level - 1) / 2), THEMES.length - 1)]
   const displayBoard = gameOver ? board : renderBoard()
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #0a0510 0%, #060818 40%, #0a0510 100%)', userSelect: 'none', padding: 8, maxWidth: 390, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Background orbs */}
       <div style={{ position: 'fixed', top: '-15%', left: '-10%', width: 280, height: 280, borderRadius: '50%', background: `radial-gradient(circle, ${T.primary}25 0%, transparent 70%)`, pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: '-10%', right: '-10%', width: 220, height: 220, borderRadius: '50%', background: `radial-gradient(circle, ${T.secondary}20 0%, transparent 70%)`, pointerEvents: 'none', zIndex: 0 }} />
-
       <div className="scanline-overlay" />
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, position: 'relative', zIndex: 10 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 1 }}>
@@ -408,7 +327,6 @@ const handleConnect = async () => {
         )}
       </div>
 
-      {/* Scores */}
       <div style={{ display: 'flex', gap: 5, marginBottom: 8, position: 'relative', zIndex: 10 }}>
         {[{ l: 'BEST', v: bestScore, c: '#facc15' }, { l: 'SCORE', v: score, c: '#60a5fa' }, { l: 'LEVEL', v: level, c: T.primary }, { l: 'LINES', v: totalLines, c: '#e2e8f0' }].map(s => (
           <div key={s.l} style={{ flex: 1, background: 'rgba(10,8,20,0.85)', border: `1px solid ${s.l === 'LEVEL' ? T.primary + '80' : 'rgba(212,175,55,0.15)'}`, borderRadius: 10, padding: '5px 3px', textAlign: 'center', boxShadow: s.l === 'LEVEL' ? `0 0 15px ${T.glow}` : 'none' }}>
@@ -430,10 +348,7 @@ const handleConnect = async () => {
         </div>
       )}
 
-      {/* Game area */}
       <div style={{ display: 'flex', gap: 6, position: 'relative', zIndex: 10 }}>
-
-        {/* Left panel */}
         <div style={{ width: 52, display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
           <div style={{ background: 'rgba(10,8,20,0.85)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, padding: 6 }}>
             <div style={{ fontSize: 9, color: '#9ca3af', textAlign: 'center', marginBottom: 4, fontWeight: 600 }}>NEXT</div>
@@ -457,17 +372,8 @@ const handleConnect = async () => {
           </div>
         </div>
 
-        {/* Board */}
         <div style={{ flex: 1, position: 'relative' }}>
-          <div style={{
-            background: flashBoard ? 'rgba(255,255,255,0.15)' : 'rgba(5,4,15,0.98)',
-            border: `1px solid rgba(212,175,55,0.4)`,
-            borderRadius: 12,
-            overflow: 'hidden',
-            boxShadow: `0 0 25px ${T.glow}, 0 0 50px ${T.glow}40, inset 0 0 30px rgba(0,0,0,0.8)`,
-            transition: 'background 0.1s',
-            position: 'relative',
-          }}>
+          <div style={{ background: flashBoard ? 'rgba(255,255,255,0.15)' : 'rgba(5,4,15,0.98)', border: `1px solid rgba(212,175,55,0.4)`, borderRadius: 12, overflow: 'hidden', boxShadow: `0 0 25px ${T.glow}, 0 0 50px ${T.glow}40, inset 0 0 30px rgba(0,0,0,0.8)`, transition: 'background 0.1s', position: 'relative' }}>
             {showCombo && combo > 1 && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, pointerEvents: 'none' }}>
                 <div style={{ fontSize: 22, fontWeight: 900, color: '#facc15', textShadow: '0 0 20px #facc15, 0 0 40px #facc15' }}>x{combo} COMBO!</div>
@@ -499,7 +405,6 @@ const handleConnect = async () => {
         </div>
       </div>
 
-      {/* Controls */}
       <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button onClick={holdPiece} style={{ background: 'linear-gradient(135deg, #5b21b6, #7c3aed)', color: '#fff', fontSize: 11, padding: '9px 13px', borderRadius: 10, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer', boxShadow: '0 0 10px rgba(124,58,237,0.5)' }}>HOLD</button>
