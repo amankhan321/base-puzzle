@@ -137,7 +137,7 @@ export default function Game() {
   // Single init effect - call ready immediately then connect
   useEffect(() => {
     const init = async () => {
-      try { await sdk.actions.ready() } catch (e) { console.log('sdk ready:', e) }
+      try { await sdk.actions.ready({ disableNativeGestures: true }) } catch (e) { console.log('sdk ready:', e) }
       const s = localStorage.getItem('basepuzzle_best')
       if (s) setBestScore(parseInt(s))
       // Auto connect farcaster wallet
