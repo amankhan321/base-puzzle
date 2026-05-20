@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAccount, useConnect, useDisconnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import sdk from '@farcaster/miniapp-sdk'
 
+// Call ready IMMEDIATELY before anything else
+if (typeof window !== 'undefined') {
+  sdk.actions.ready({ disableNativeGestures: true }).catch(() => {})
+}
+
 const CONTRACT_ADDRESS = '0x2b481A0B3DF460fae80777424BB1a0b95Af6a0ec' as `0x${string}`
 const CONTRACT_ABI = [{ name: 'saveScore', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: '_score', type: 'uint256' }, { name: '_lines', type: 'uint256' }, { name: '_level', type: 'uint256' }], outputs: [] }] as const
 
@@ -134,19 +139,12 @@ export default function Game() {
   const { writeContract, data: txHash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // Single init effect - call ready immediately then connect
   useEffect(() => {
-    const init = async () => {
-      try { await sdk.actions.ready({ disableNativeGestures: true }) } catch (e) { console.log('sdk ready:', e) }
-      const s = localStorage.getItem('basepuzzle_best')
-      if (s) setBestScore(parseInt(s))
-      // Auto connect farcaster wallet
-      setTimeout(() => {
-        const fc = connectors.find(c => c.id === 'farcasterMiniApp')
-        if (fc) connect({ connector: fc })
-      }, 300)
-    }
-    init()
+    const s = localStorage.getItem('basepuzzle_best')
+    if (s) setBestScore(parseInt(s))
+    // Auto connect
+    const fc = connectors.find(c => c.id === 'farcasterMiniApp')
+    if (fc) connect({ connector: fc })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -304,7 +302,6 @@ export default function Game() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #0a0510 0%, #060818 40%, #0a0510 100%)', userSelect: 'none', padding: 8, maxWidth: 390, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
-
       <div style={{ position: 'fixed', top: '-15%', left: '-10%', width: 280, height: 280, borderRadius: '50%', background: `radial-gradient(circle, ${T.primary}25 0%, transparent 70%)`, pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: '-10%', right: '-10%', width: 220, height: 220, borderRadius: '50%', background: `radial-gradient(circle, ${T.secondary}20 0%, transparent 70%)`, pointerEvents: 'none', zIndex: 0 }} />
       <div className="scanline-overlay" />
@@ -376,7 +373,7 @@ export default function Game() {
           <div style={{ background: flashBoard ? 'rgba(255,255,255,0.15)' : 'rgba(5,4,15,0.98)', border: `1px solid rgba(212,175,55,0.4)`, borderRadius: 12, overflow: 'hidden', boxShadow: `0 0 25px ${T.glow}, 0 0 50px ${T.glow}40, inset 0 0 30px rgba(0,0,0,0.8)`, transition: 'background 0.1s', position: 'relative' }}>
             {showCombo && combo > 1 && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, pointerEvents: 'none' }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: '#facc15', textShadow: '0 0 20px #facc15, 0 0 40px #facc15' }}>x{combo} COMBO!</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: '#facc15', textShadow: '0 0 20px #facc15' }}>x{combo} COMBO!</div>
               </div>
             )}
             {gameOver && (
@@ -385,7 +382,7 @@ export default function Game() {
                 <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 2 }}>Game Over!</div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: T.primary, marginBottom: 4 }}>Score: {score}</div>
                 <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 14 }}>Lines: {totalLines} · Lvl: {level}</div>
-                <button onClick={saveScore} disabled={isPending || isConfirming} style={{ background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', padding: '8px 20px', borderRadius: 12, fontWeight: 900, fontSize: 13, marginBottom: 8, border: 'none', cursor: 'pointer', boxShadow: `0 0 15px ${T.glow}`, opacity: isPending || isConfirming ? 0.5 : 1 }}>
+                <button onClick={saveScore} disabled={isPending || isConfirming} style={{ background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', padding: '8px 20px', borderRadius: 12, fontWeight: 900, fontSize: 13, marginBottom: 8, border: 'none', cursor: 'pointer', opacity: isPending || isConfirming ? 0.5 : 1 }}>
                   {isPending ? 'Confirm...' : isConfirming ? 'Saving...' : '💾 Save Score on Base'}
                 </button>
                 <button onClick={resetGame} style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', padding: '8px 20px', borderRadius: 12, fontWeight: 900, fontSize: 13, border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' }}>🔄 Play Again</button>
@@ -407,13 +404,13 @@ export default function Game() {
 
       <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={holdPiece} style={{ background: 'linear-gradient(135deg, #5b21b6, #7c3aed)', color: '#fff', fontSize: 11, padding: '9px 13px', borderRadius: 10, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer', boxShadow: '0 0 10px rgba(124,58,237,0.5)' }}>HOLD</button>
-          <button onClick={rotatePiece} style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', fontSize: 22, fontWeight: 700, border: '2px solid rgba(212,175,55,0.4)', cursor: 'pointer', boxShadow: `0 0 18px ${T.glow}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
-          <button onClick={hardDrop} style={{ background: 'linear-gradient(135deg, #92400e, #b45309)', color: '#fff', fontSize: 11, padding: '9px 13px', borderRadius: 10, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer', boxShadow: '0 0 10px rgba(180,83,9,0.5)' }}>DROP</button>
+          <button onClick={holdPiece} style={{ background: 'linear-gradient(135deg, #5b21b6, #7c3aed)', color: '#fff', fontSize: 11, padding: '9px 13px', borderRadius: 10, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer' }}>HOLD</button>
+          <button onClick={rotatePiece} style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', fontSize: 22, fontWeight: 700, border: '2px solid rgba(212,175,55,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
+          <button onClick={hardDrop} style={{ background: 'linear-gradient(135deg, #92400e, #b45309)', color: '#fff', fontSize: 11, padding: '9px 13px', borderRadius: 10, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer' }}>DROP</button>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {[{ fn: moveLeft, label: '←' }, { fn: moveDown, label: '↓' }, { fn: moveRight, label: '→' }].map((btn, i) => (
-            <button key={i} onClick={btn.fn} style={{ width: 54, height: 48, borderRadius: 12, background: i === 1 ? `linear-gradient(135deg, ${T.primary}, ${T.secondary})` : 'linear-gradient(135deg, #5b21b6, #7c3aed)', color: '#fff', fontSize: 22, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer', boxShadow: `0 0 12px ${T.glow}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{btn.label}</button>
+            <button key={i} onClick={btn.fn} style={{ width: 54, height: 48, borderRadius: 12, background: i === 1 ? `linear-gradient(135deg, ${T.primary}, ${T.secondary})` : 'linear-gradient(135deg, #5b21b6, #7c3aed)', color: '#fff', fontSize: 22, fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{btn.label}</button>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
