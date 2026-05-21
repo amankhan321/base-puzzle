@@ -20,6 +20,7 @@ export default function Home() {
       ua.includes('Farcaster') ||
       ref.includes('warpcast') ||
       ref.includes('farcaster') ||
+      ref.includes('farcaster.xyz') ||
       ref.includes('farcaster.xyz')
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(ua)
