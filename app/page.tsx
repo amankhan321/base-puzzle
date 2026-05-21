@@ -19,7 +19,8 @@ export default function Home() {
       isInFrame ||
       ua.includes('Farcaster') ||
       ref.includes('warpcast') ||
-      ref.includes('farcaster')
+      ref.includes('farcaster') ||
+      ref.includes('farcaster.xyz')
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(ua)
 
